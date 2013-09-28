@@ -103,7 +103,7 @@ HexView::HexView(HWND hwnd)	:
 
 	m_nSearchLen(0),
 
-	m_nBytesPerColumn(2),		//1/2/4/8
+	m_nBytesPerColumn(1),		//1/2/4/8
 
 	//m_fMouseDown(FALSE),
 	m_nSelectionMode(SEL_NONE),

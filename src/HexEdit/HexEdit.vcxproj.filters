@@ -238,6 +238,9 @@
     <None Include="media\selbox2.png">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resource.hm">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="HexEdit.exe.manifest" />

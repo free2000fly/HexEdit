@@ -967,6 +967,7 @@ HWND CreateHexViewCtrl(HWND hwndParent)
 	HexView_SetStyle(hwndHV, -1, dwStyle);//|HVS_ASCII_INVISIBLE);//|HVS_FITTOWINDOW);//|HVS_ASCII_INVISIBLE );
 	HexView_SetDataShift(hwndHV, 0);
 
+    HexView_SetGrouping(hwndHV, g_bitForm);
 
 	// set the font0
 	SendMessage(hwndHV, WM_SETFONT, (WPARAM)g_hHexViewFont, 0);

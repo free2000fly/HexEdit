@@ -41,7 +41,7 @@ static HTHEME OpenThemeShim(HWND hwnd, LPCWSTR pszClassList)
 	}
 }
 
-typedef struct
+typedef struct _TabItem
 {
 	int			nWidth;		// width of the *string*
 	LPARAM		lParam;
@@ -50,7 +50,7 @@ typedef struct
 	TCHAR		szText[MAX_TAB_TEXT];
 } TabItem;
 
-typedef struct
+typedef struct _TabView
 {
 	int			nNumTabs;
 	int			nSelectedIdx;
@@ -567,7 +567,7 @@ static LRESULT WINAPI TabView_MouseMove(TabView *tv, HWND hwnd, int x, int y)
 	RECT	rect;
 
 	POINT	pt = { x, y };
-	int i;
+	int i = 0;
 	BOOL a, oldWinList = tv->fWindowList;
 
 	if(TabView_HitTest(tv, x, y, &i, &a, &tv->fWindowList) && i != tv->nCurrentIdx)
@@ -586,7 +586,11 @@ static LRESULT WINAPI TabView_MouseMove(TabView *tv, HWND hwnd, int x, int y)
 		ti.uId  = (UINT)tv->hwndToolTip;
 		SendMessage(tv->hwndToolTip, TTM_GETTOOLINFO, 0, (LPARAM)&ti);
 
-		ti.lpszText = tv->item[i].szText;
+        if (i < 0) {
+            ti.lpszText = _T("TabView control");
+        } else {
+			ti.lpszText = tv->item[i].szText;
+        }
 		SendMessage(tv->hwndToolTip, TTM_SETTOOLINFO, 0, (LPARAM)&ti);
 
 		//SendMessage(tv->hwndToolTip, TTM_ADJUSTRECT, 0, (LPARAM)&ti);
@@ -971,7 +975,7 @@ static LRESULT WINAPI TabViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 	case WM_NCCREATE:
 
 		// Allocate a new TabView structure	
-		if((tv = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(TabView))) == 0)
+		if((tv = (TabView *) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(TabView))) == 0)
 			return FALSE;
 
 		SetTabViewPtr(hwnd, tv);

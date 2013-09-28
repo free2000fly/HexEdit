@@ -22,6 +22,7 @@ extern HINSTANCE g_hInstance;
 extern HWND      g_hwndMain;
 extern HWND		 g_hwndHexView;
 extern HWND		 g_hwndStatusBar;
+extern LONG g_bitForm;
 
 extern BOOL			g_fStatusHexCursor	;
 extern BOOL			g_fStatusHexSize	;

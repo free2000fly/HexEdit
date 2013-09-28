@@ -154,7 +154,6 @@
 #define IDC_FILENAME                    1025
 #define IDC_TYPEVIEWLOG                 1026
 #define IDC_FILENAME2                   1026
-#define IDC_WARNINSERT                  1028
 #define IDC_NAME                        1029
 #define IDC_BUTTON1                     1030
 #define IDC_MODIFY_NUMBYTES             1032

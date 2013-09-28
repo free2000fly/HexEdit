@@ -20,11 +20,12 @@ void GetLastWriteTime(TCHAR *szFile, FILETIME *wt)
 	CloseHandle(hFile);
 }
 
-DWORD WINAPI ChangeNotifyThread(NOTIFY_DATA *pnd)
+DWORD WINAPI ChangeNotifyThread(void *pv)
 {
 	HANDLE hChange;
 	DWORD  dwResult;
 	TCHAR  szDirectory[MAX_PATH];
+    NOTIFY_DATA *pnd = (NOTIFY_DATA *)pv;
 
 	//FILE_NOTIFY_INFORMATION notifyinfo;
 	//HANDLE hDirectory;
@@ -56,7 +57,7 @@ DWORD WINAPI ChangeNotifyThread(NOTIFY_DATA *pnd)
 	{
 		HANDLE hEventList[2] = { hChange, pnd->hQuitEvent };
 		
-		if((dwResult = WaitForMultipleObjects(1, hEventList, FALSE, INFINITE)) == WAIT_OBJECT_0)
+		if((dwResult = WaitForMultipleObjects(2, hEventList, FALSE, INFINITE)) == WAIT_OBJECT_0)
 		{
 			NMFILECHANGE nmfc = { { pnd->hwndNotify, 0, FCN_FILECHANGE }, pnd->szFile };
 			FILETIME wt;
@@ -95,7 +96,7 @@ DWORD WINAPI ChangeNotifyThread(NOTIFY_DATA *pnd)
 
 BOOL NotifyFileChange(TCHAR *szPathName, HWND hwndNotify, HANDLE hQuitEvent)
 {
-	NOTIFY_DATA *pnd = malloc(sizeof(NOTIFY_DATA));
+	NOTIFY_DATA *pnd = (NOTIFY_DATA *) malloc(sizeof(NOTIFY_DATA));
 
 	ZeroMemory(pnd, sizeof(NOTIFY_DATA));
 

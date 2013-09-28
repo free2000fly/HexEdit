@@ -19,6 +19,7 @@
 
 HFONT g_hHexViewFont = 0;
 
+LONG g_bitForm = 1;
 TCHAR g_szHexViewFontName[100];
 BOOL  g_fFirstTimeExecution = TRUE;
 BOOL  g_fFitToWindow = FALSE;
@@ -34,6 +35,7 @@ void FirstTimeOptions(HWND hwndMain)
 
 void LoadSettings0(HKEY hKey)
 {
+	GetSettingInt(hKey, TEXT("bitForm"), &g_bitForm, 1);
 	GetSettingStr(hKey, TEXT("HexViewFontName"), g_szHexViewFontName, 100, TEXT(""));
 	GetSettingInt(hKey, TEXT("FirstTimeExecution"), &g_fFirstTimeExecution, TRUE);
 
@@ -57,6 +59,7 @@ void RealiseSettings()
 
 void SaveSettings0(HKEY hKey)
 {
+	WriteSettingInt(hKey, TEXT("bitForm"), g_bitForm);
 	WriteSettingStr(hKey, TEXT("HexViewFontName"), g_szHexViewFontName);
 	WriteSettingInt(hKey, TEXT("FirstTimeExecution"), FALSE);
 }

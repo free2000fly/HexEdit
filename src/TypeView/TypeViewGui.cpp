@@ -22,6 +22,7 @@
 #include "..\HexEdit\resource.h"
 #include "..\GridView\GridView.h"
 #include "..\HexView\HexView.h"
+#include "../HexEdit/FileChange.h"
 
 #include "TypeView.h"
 
@@ -31,7 +32,6 @@ bool Evaluate(HGRIDITEM hParent, ExprNode *expr, INUMTYPE *result, size_w baseOf
 size_w SizeOf(Type *type, size_w offset, HWND hwndHV);
 
 extern "C" HWND GetActiveHexView(HWND hwndMain);
-extern "C" BOOL NotifyFileChange(TCHAR *szPathName, HWND hwndNotify, HANDLE hQuitEvent);
 
 extern vector <FILE_DESC*>	globalFileHistory;
 
@@ -1081,18 +1081,32 @@ void InitTypeLibrary()
 	}
 }
 
+std::vector<HANDLE> vecFileWatch;
+extern "C" void Uninitialize();
+
 extern "C" void Initialize()
 {
 	InitTypeLibrary();
-
+    Uninitialize();
 	for(size_t i = 0; i < globalFileHistory.size(); i++)
 	{
 		TCHAR szPath[MAX_PATH];
 		FILE_DESC *fd = globalFileHistory[i];
 		wsprintf(szPath, TEXT("%hs"), globalFileHistory[i]->filePath);
-		NotifyFileChange(szPath, g_hwndMain, 0);
+		HANDLE h = CreateFileChangeNotifier(szPath, g_hwndMain);
+        vecFileWatch.push_back(h);
 	}
 }
+
+extern "C" void Uninitialize()
+{
+    std::vector<HANDLE>::iterator it;
+    for (it=vecFileWatch.begin(); it!=vecFileWatch.end(); ++it) {
+        CloseFileChangeNotifier(*it);
+    }
+    vecFileWatch.clear();
+}
+
 /*
 extern "C"
 void FillTypeView(HWND hwndGV)

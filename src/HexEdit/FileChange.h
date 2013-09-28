@@ -14,26 +14,22 @@
 extern "C" {
 #endif
 
-typedef struct 
-{
+typedef struct NOTIFY_DATA {
 	TCHAR		szFile[MAX_PATH];
 	HWND		hwndNotify;
 	HANDLE		hQuitEvent;
-	UINT		uMsg;
-	FILETIME	lastChange;
-	//ULONG64		lastChange;
-
+    HANDLE hThread;
 } NOTIFY_DATA;
 
-typedef struct
-{
+typedef struct NMFILECHANGE {
 	NMHDR hdr;
-	TCHAR *pszFile;
+	NOTIFY_DATA * data;
 } NMFILECHANGE, *PNMFILECHANGE;
 
 #define FCN_FILECHANGE 2000
 
-BOOL NotifyFileChange(TCHAR *szPathName, HWND hwndNotify, HANDLE hQuitEvent);
+HANDLE CreateFileChangeNotifier(LPCTSTR szPathName, HWND hwndNotify);
+void CloseFileChangeNotifier(HANDLE notifier);
 
 #ifdef __cplusplus
 }

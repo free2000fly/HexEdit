@@ -10,104 +10,121 @@
 #define _WIN32_WINNT 0x501
 #include <windows.h>
 #include <tchar.h>
+#include <assert.h>
+#include <shlwapi.h>
 #include "trace.h"
 #include "FileChange.h"
 
-void GetLastWriteTime(TCHAR *szFile, FILETIME *wt)
+DWORD WINAPI ChangeNotifyThread(LPVOID lpParam)
 {
-	HANDLE hFile = CreateFile(szFile, 0, 0, 0, OPEN_EXISTING, 0, 0);
-	GetFileTime(hFile, 0, 0, wt);
-	CloseHandle(hFile);
+    HANDLE hChange;
+    HANDLE hFind;
+    DWORD  dwResult;
+    TCHAR  szDirectory[MAX_PATH];
+    WIN32_FIND_DATA fdCurFile = { 0 };
+    NOTIFY_DATA *pnd = (NOTIFY_DATA *)lpParam;
+    int nCurrentTime = 0;
+    NMFILECHANGE nmfc = { { pnd->hwndNotify, 0, FCN_FILECHANGE }, pnd };
+
+    lstrcpy(szDirectory, pnd->szFile);
+
+    // get the directory name from filename
+    if(GetFileAttributes(szDirectory) != FILE_ATTRIBUTE_DIRECTORY) {
+        PathRemoveFileSpec(szDirectory);
+    }
+
+    // Save data of current file
+    hFind = FindFirstFile(pnd->szFile, &fdCurFile);
+    if (hFind != INVALID_HANDLE_VALUE) {
+        FindClose(hFind);
+    }
+
+    // watch the specified directory for changes
+    hChange = FindFirstChangeNotification(szDirectory, FALSE,
+        FILE_NOTIFY_CHANGE_FILE_NAME  | \
+        FILE_NOTIFY_CHANGE_DIR_NAME   | \
+        FILE_NOTIFY_CHANGE_ATTRIBUTES | \
+        FILE_NOTIFY_CHANGE_SIZE | \
+        FILE_NOTIFY_CHANGE_LAST_WRITE);
+
+    do {
+        WIN32_FIND_DATA fdUpdated = { 0 };
+        HANDLE hFind = NULL;
+        HANDLE hEventList[2] = { hChange, pnd->hQuitEvent };
+
+        dwResult = WaitForMultipleObjects(_countof(hEventList), hEventList, FALSE, INFINITE);
+        if(dwResult != WAIT_OBJECT_0) {
+            break;
+        }
+        // Check if the changes affect the current file
+        hFind = FindFirstFile(pnd->szFile, &fdUpdated);
+        if (INVALID_HANDLE_VALUE != hFind) {
+            FindClose(hFind);
+        }
+        // Check if the file has been changed
+        if (CompareFileTime(&fdCurFile.ftLastWriteTime,&fdUpdated.ftLastWriteTime) != 0 ||
+            fdCurFile.nFileSizeLow != fdUpdated.nFileSizeLow ||
+            fdCurFile.nFileSizeHigh != fdUpdated.nFileSizeHigh)
+        {
+            if (GetTickCount() - nCurrentTime > 1000) {
+                PostMessage(pnd->hwndNotify, WM_NOTIFY, 0, (LPARAM)&nmfc);
+                fdCurFile = fdUpdated;
+                nCurrentTime = GetTickCount();
+            }
+        }
+        FindNextChangeNotification(hChange);
+    } while(TRUE);
+
+    // cleanup
+    FindCloseChangeNotification(hChange);
+    CloseHandle(pnd->hQuitEvent);
+    free(pnd);
+
+    return 0;
 }
 
-DWORD WINAPI ChangeNotifyThread(void *pv)
+HANDLE CreateFileChangeNotifier(LPCTSTR szPathName, HWND hwndNotify)
 {
-	HANDLE hChange;
-	DWORD  dwResult;
-	TCHAR  szDirectory[MAX_PATH];
-    NOTIFY_DATA *pnd = (NOTIFY_DATA *)pv;
+    NOTIFY_DATA *pnd = (NOTIFY_DATA *) calloc(1, sizeof(NOTIFY_DATA));
+    HANDLE hThread = NULL;
+    DWORD threadID = 0;
 
-	//FILE_NOTIFY_INFORMATION notifyinfo;
-	//HANDLE hDirectory;
+    pnd->hwndNotify = hwndNotify;
+    lstrcpy(pnd->szFile, szPathName);
 
-	//OVERLAPPED overlapped = { 0 };
+    hThread = CreateThread(0, 0, ChangeNotifyThread, pnd, CREATE_SUSPENDED, &threadID);
 
-	//hChange = CreateEvent(0, FALSE, FALSE, 0);
-	//overlapped.hEvent = hChange;
+    if (hThread) {
+        TCHAR evtName[MAX_PATH];
+        _stprintf(evtName, _T("Notifier_%d"), (int)hThread);
+        pnd->hQuitEvent = CreateEvent(NULL, FALSE, FALSE, evtName);
+        pnd->hThread = hThread;
+        ResumeThread(hThread);
+    } else {
+        free(pnd);
+    }
 
-
-	lstrcpy(szDirectory, pnd->szFile);
-
-	// get the directory name from filename
-	if(GetFileAttributes(szDirectory) != FILE_ATTRIBUTE_DIRECTORY)
-	{
-		TCHAR *slash = _tcsrchr(szDirectory, _T('\\'));
-		if(slash) *slash = '\0';
-	}
-
-	//hDirectory = CreateFile(szDirectory, FILE_LIST_DIRECTORY, FILE_SHARE_READ|FILE_SHARE_DELETE,
-	//	NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OVERLAPPED , NULL);
-
-	//ReadDirectoryChangesW(hDirectory, &notifyinfo, sizeof(notifyinfo), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE, 0, &overlapped, 0);
-	
-	// watch the specified directory for changes
-	hChange = FindFirstChangeNotification(szDirectory, FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
-
-	do
-	{
-		HANDLE hEventList[2] = { hChange, pnd->hQuitEvent };
-		
-		if((dwResult = WaitForMultipleObjects(2, hEventList, FALSE, INFINITE)) == WAIT_OBJECT_0)
-		{
-			NMFILECHANGE nmfc = { { pnd->hwndNotify, 0, FCN_FILECHANGE }, pnd->szFile };
-			FILETIME wt;
-			ULONG64 n1, n2;
-			//PostMessage(pnd->hwndNotify, WM_NOTIFY, 0, (LPARAM)pnd);
-
-			GetLastWriteTime(pnd->szFile, &wt);
-
-			//GetSystemTimeAsFileTime(&ft);
-
-
-			n1 = (((ULONG64)wt.dwHighDateTime) << 32) + wt.dwLowDateTime;
-			n2 = (((ULONG64)pnd->lastChange.dwHighDateTime) << 32) + pnd->lastChange.dwLowDateTime;
-
-			TRACEA("%I64x %I64x (%d)\n", n1, n2, GetCurrentThreadId());
-
-			//if(*(ULONG64 *)&ft > *(ULONG64 *)&pnd->lastChange + (10000000 * 5))
-			if(n1 > n2 + (10000000 * 3))
-			{
-				PostMessage(pnd->hwndNotify, WM_NOTIFY, 0, (LPARAM)&nmfc);
-			}
-
-			pnd->lastChange = wt;
-		}
-
-		FindNextChangeNotification(hChange);
-	} 
-	while(dwResult == WAIT_OBJECT_0);
-
-	// cleanup
-	FindCloseChangeNotification(hChange);
-	free(pnd);
-
-	return 0;
+    return hThread;
 }
 
-BOOL NotifyFileChange(TCHAR *szPathName, HWND hwndNotify, HANDLE hQuitEvent)
+void CloseFileChangeNotifier(HANDLE notifier)
 {
-	NOTIFY_DATA *pnd = (NOTIFY_DATA *) malloc(sizeof(NOTIFY_DATA));
+    if (notifier) {
+        HANDLE quitEvent;
+        TCHAR evtName[MAX_PATH];
+        _stprintf(evtName, _T("Notifier_%d"), (int)notifier);
+        quitEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, evtName);
 
-	ZeroMemory(pnd, sizeof(NOTIFY_DATA));
-
-	pnd->hQuitEvent = 0;
-	pnd->hwndNotify = hwndNotify;
-	pnd->uMsg		= WM_USER;
-	lstrcpy(pnd->szFile, szPathName);
-
-	GetLastWriteTime(pnd->szFile, &pnd->lastChange);
-
-	CreateThread(0, 0, ChangeNotifyThread, pnd, 0, 0);
-
-	return TRUE;
+        if (quitEvent) {
+            SetEvent(quitEvent);
+            if (WaitForSingleObject(notifier, INFINITE) != WAIT_OBJECT_0) {
+                assert(FALSE);
+                TerminateThread(notifier, 0xdead);
+            }
+            CloseHandle(notifier);
+            CloseHandle(quitEvent);
+        } else {
+            TerminateThread(notifier, 0xdead);
+        }
+    }
 }

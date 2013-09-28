@@ -40,6 +40,7 @@
 #define IDC_TYPEVIEW_PIN		8
 
 extern "C" void Initialize();
+extern "C" void Uninitialize();
 extern vector <TypeDecl *> globalTypeDeclList;
 size_w FmtData(HWND hwndGV, HGRIDITEM hRoot, Type *type, size_w dwOffset, TypeDecl *typeDecl);
 size_w InsertTypeGV(HWND hwndGridView, HGRIDITEM hRoot, TypeDecl *typeDecl, size_w dwOffset);
@@ -604,7 +605,7 @@ LRESULT CALLBACK TypeViewCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		if(nmfc->hdr.code == FCN_FILECHANGE)
 		{
 			TCHAR szMessage[MAX_PATH+100];
-			wsprintf(szMessage, TEXT("%s\r\n\r\nThis file has changed outside of the TypeView editor.\r\nDo you want to reload the changes?"), nmfc->pszFile);
+			wsprintf(szMessage, TEXT("%s\r\n\r\nThis file has changed outside of the TypeView editor.\r\nDo you want to reload the changes?"), nmfc->data->szFile);
 
 			UINT ret = MessageBox(hwnd, szMessage, TEXT("HexEdit"), MB_ICONQUESTION|MB_YESNO);
 

@@ -130,7 +130,7 @@ BOOL ModifyHexViewData(HWND hwndHV, int nOperation, BYTE * operand, size_w nLeng
 INT_PTR CALLBACK ModifyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	static size_w len;
-	HWND hwndHV = g_hwndHexView;
+    HWND hwndHV = GetActiveHexView(g_hwndMain);
 
 	static BOOL fHexLength = FALSE;
 	static int  nLastOperand   = 0;

@@ -930,7 +930,7 @@ BOOL ShowImportDlg(HWND hwnd, LPTSTR pszFileName, LPTSTR pszTitleName)
 		
 		//SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDM_FILE_NEW, 0), 0);
 		//CreateNewFile(hwnd);
-		if(Import(szFileName, g_hwndHexView, &g_ImportOptions) == 0)
+        if (Import(szFileName, GetActiveHexView(g_hwndMain), &g_ImportOptions) == 0)
 		{
 			if(GetLastError() != ERROR_NO_MORE_ITEMS)
 			{

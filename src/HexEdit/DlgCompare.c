@@ -17,7 +17,7 @@
 
 INT_PTR CALLBACK CompareDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndHV = g_hwndHexView;
+    HWND hwndHV = GetActiveHexView(g_hwndMain);
 
 	switch (iMsg)
 	{

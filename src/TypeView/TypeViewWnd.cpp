@@ -696,7 +696,7 @@ void FillTypeList(HWND hwndCombo)
 void SetDefaultType(HWND hwndTypeView)
 {
 	TCHAR buf[MAX_PATH], *ptr;
-	HexView_GetFileName(g_hwndHexView, buf, MAX_PATH);
+	HexView_GetFileName(GetActiveHexView(g_hwndMain), buf, MAX_PATH);
 	ptr = _tcsrchr(buf, '.');
 	char ext[MAX_PATH];
 	if(ptr) sprintf(ext, "%ls", ptr);

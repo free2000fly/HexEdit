@@ -617,7 +617,7 @@ HWND CreateHighlightView(HWND hwndParent)
 
 	
 	
-	//UpdateHighlights(g_hwndHexView, hwndGridView);
+	//UpdateHighlights(GetActiveHexView(g_hwndMain), hwndGridView);
 	//UpdateHighlights((HWND)-1, hwndGridView);
 
 	ToolPanel_AddItem(hwndPanel, hwndGridView, 0);

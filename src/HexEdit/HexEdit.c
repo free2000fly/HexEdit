@@ -107,7 +107,6 @@ BYTE hexData[0x3e9] =
 
 
 HWND		g_hwndMain;
-HWND		g_hwndHexView;
 HWND		g_hwndStatusBar;
 HWND		g_hwndTabView;
 HWND		g_hwndToolbar;
@@ -204,16 +203,14 @@ void SetWindowFileName(HWND hwnd, TCHAR *szFileName, BOOL fModified, BOOL fReadO
 
 HWND GetActiveHexView(HWND hwndMain)
 {
-	return g_hwndHexView;
-
-	/*MAINWND *mainWnd;
+	MAINWND *mainWnd;
 	TCITEM tci = { TCIF_PARAM };
 
 	if((mainWnd = (MAINWND *)GetWindowLongPtr(hwndMain, 0)) == 0)
-		return 0;
+		return NULL;
 	
 	TabCtrl_GetItem(mainWnd->hwndTabView, TabCtrl_GetCurSel(mainWnd->hwndTabView), &tci);
-	return (HWND)tci.lParam;*/
+	return (HWND)tci.lParam;
 }
 
 HWND CreateToolTip(HWND hwndTarget)
@@ -551,7 +548,7 @@ void HexView_CursorChanged(HWND hwndMain, HWND hwndHV)
 
 LONG HexView_Changed(MAINWND *mainWnd, NMHVCHANGED *hvc)
 {
-	HWND hwndHV = GetActiveHexView(mainWnd->hwndMain);//g_hwndHexView;
+	HWND hwndHV = GetActiveHexView(mainWnd->hwndMain);
 
 	TCHAR *szMethod[] = {
 		TEXT("??"), TEXT("HVMETHOD_OVERWRITE"), TEXT("HVMETHOD_INSERT"), TEXT("HVMETHOD_DELETE"), 
@@ -579,7 +576,7 @@ LONG HexView_Changed(MAINWND *mainWnd, NMHVCHANGED *hvc)
 
 LONG_PTR HexViewNotifyHandler(MAINWND *mainWnd, HWND hwnd, NMHDR *hdr)
 {
-	HWND hwndHV = GetActiveHexView(hwnd);//g_hwndHexView;
+	HWND hwndHV = GetActiveHexView(hwnd);
 	NMHVPROGRESS *hvp;
 	NMHVCHANGED  *hvc;
 
@@ -984,7 +981,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	POINT pt;
 	RECT  rect;
 	HMENU hMenu;
-	HWND hwndHV = GetActiveHexView(hwnd);//g_hwndHexView;
+	HWND hwndHV = GetActiveHexView(hwnd);
 	int i;
 	TCITEM tci;
 
@@ -994,11 +991,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_NCCREATE:
 		
-		if((mainWnd = malloc(sizeof(MAINWND))) == 0)
+		if((mainWnd = (MAINWND *) malloc(sizeof(MAINWND))) == 0)
 			return FALSE;
 		
 		SetWindowLongPtr(hwnd, 0, (LONG_PTR)mainWnd);
 		ZeroMemory(mainWnd, sizeof(MAINWND));
+        mainWnd->hwndMain = hwnd;
+
+		g_hwndMain = hwnd;
 		return TRUE;
 
 	case WM_NCDESTROY:
@@ -1007,12 +1007,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_CREATE:
 
-		g_hwndMain = hwnd;
-
 		SetWindowIcon(hwnd, IDI_APP);
 
 		// create a child-window EDIT control
-		//g_hwndHexView	= CreateHexViewCtrl(hwnd);
 		g_hwndTabView	= CreateWindow(WC_TABVIEW, TEXT(""), WS_CHILD|WS_VISIBLE,0,0,0,0,hwnd, 0, g_hInstance, 0);
 		g_hwndStatusBar = CreateStatusBar(hwnd);
 
@@ -1020,13 +1017,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		SetStatusBarParts(g_hwndStatusBar);
 
-		hwndHV = g_hwndHexView;
-
 		mainWnd->hwndMain		= hwnd;
 		mainWnd->hwndStatusBar	= g_hwndStatusBar;
 		mainWnd->hwndTabView	= g_hwndTabView;
 
-		CreateToolTip(g_hwndHexView);
+        hwndHV = GetActiveHexView(hwnd);
+
+		CreateToolTip(hwndHV);
 
 //		g_hwndDock[0] = CreateDockWnd(&dock, hwnd, TEXT("Toolbar"));
 
@@ -1403,17 +1400,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmdLine, int nShowC
 	//ShowOwnedPopups(g_hwndMain, TRUE);
 	DockWnd_ShowDeferredPopups(g_hwndMain);
 
-#ifdef _DEBUG
-//	HexView_InitBufShared(g_hwndHexView, hexData, sizeof(hexData));
-#endif
-
-
 	//
 	// load keyboard accelerator table
 	//
 	hAccel = LoadAccelerators(GetModuleHandle(0)/*g_hResourceModule*/, MAKEINTRESOURCE(IDR_ACCELERATOR1));
-
-	//HexView_ScrollTop(g_hwndHexView, 9);
 
 	//
 	// message-pump

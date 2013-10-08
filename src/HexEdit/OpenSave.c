@@ -360,6 +360,7 @@ UINT HexFileCloseNotify(HWND hwndMain, HWND hwndHV)
 	}
 }
 
+HWND g_hwndHexView = NULL;
 
 BOOL HexSetCurFile(HWND hwndMain, int iItem, BOOL fSetFocus)
 {
@@ -367,8 +368,8 @@ BOOL HexSetCurFile(HWND hwndMain, int iItem, BOOL fSetFocus)
 	HWND hwndHV, hwndOld;
 	TCHAR szFilePath[MAX_PATH];
 	TCHAR *name;
-	RECT rect;
-		
+    RECT rect = { 0 };
+	
 	// get specied item
 	if(!TabCtrl_GetItem(g_hwndTabView, iItem, &tci))
 		return FALSE;

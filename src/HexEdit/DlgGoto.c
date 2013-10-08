@@ -89,7 +89,7 @@ INT_PTR CALLBACK GotoDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	static size_w   nGotoHistory[200];
 	static int		nGotoHistoryCount;
 
-	HWND hwndHexView = g_hwndHexView;
+	HWND hwndHexView = GetActiveHexView(g_hwndMain);
 	BOOL   fEnableBookList = FALSE;
 
 	HBOOKMARK hbm;

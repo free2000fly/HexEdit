@@ -263,7 +263,7 @@ BOOL FindStrings(HWND hwndHV, HWND hwndGV, size_w offset, size_w length, int min
 
 INT_PTR CALLBACK StringsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndHV = g_hwndHexView;
+    HWND hwndHV = GetActiveHexView(g_hwndMain);
 	HWND hwndGridView;
 	HWND hwndPanel;
 	size_w start;

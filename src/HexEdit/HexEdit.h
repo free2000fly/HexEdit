@@ -20,7 +20,6 @@ extern "C" {
 #define APPNAME TEXT("HexEdit")
 extern HINSTANCE g_hInstance;
 extern HWND      g_hwndMain;
-extern HWND		 g_hwndHexView;
 extern HWND		 g_hwndStatusBar;
 extern LONG g_bitForm;
 

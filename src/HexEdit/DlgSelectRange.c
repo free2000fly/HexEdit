@@ -21,7 +21,7 @@ INT_PTR CALLBACK SelectRangeDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 	static BOOL		fHexOffset = TRUE;
 	static size_w	nLastLen   = 0;
 
-	HWND hwndHV = g_hwndHexView;
+	HWND hwndHV = GetActiveHexView(g_hwndMain);
 
 	switch (iMsg)
 	{

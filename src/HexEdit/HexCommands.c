@@ -22,7 +22,6 @@
 #include "..\TypeView\TypeView.h"
 
 extern HWND		 g_hwndMain;
-extern HWND		 g_hwndHexView;
 extern HWND		 g_hwndSearchBar;
 extern HWND		 g_hwndToolbar;
 extern HINSTANCE g_hInstance;
@@ -77,6 +76,21 @@ void ShowHighlightTextDlg(HWND hwndParent)
 
 BOOL PasteSpecial(HWND hwndDlg, UINT uFormat, UINT nTransformIdx);
 
+void HexEdit_SetGrouping(HWND hwnd, LONG bitForm)
+{
+    MAINWND *mainWnd = (MAINWND *)GetWindowLongPtr(hwnd, 0);
+    HWND hwndTabView = mainWnd->hwndTabView;
+    int nCount = TabCtrl_GetItemCount(hwndTabView);
+    int i=0;
+    for (i=0; i<nCount; ++i) {
+        TC_ITEM tci = { TCIF_PARAM };
+        if (TabCtrl_GetItem(hwndTabView, i, &tci)) {
+            HWND hwndHV = (HWND)tci.lParam;
+            HexView_SetGrouping(hwndHV, bitForm);
+        }
+    }
+}
+
 LONG HexEdit_OnCommand(HWND hwnd, UINT nCommandId, UINT nNotify, HWND hwndControl)
 {
 	DWORD	val;
@@ -85,8 +99,8 @@ LONG HexEdit_OnCommand(HWND hwnd, UINT nCommandId, UINT nNotify, HWND hwndContro
 	DWORD   flags;
 
 	// which HexView are we operating on?
-	HWND hwndHV = g_hwndHexView;
 	MAINWND *mainWnd = (MAINWND *)GetWindowLongPtr(hwnd, 0);
+    HWND hwndHV = GetActiveHexView(hwnd);
 
 	// react to menu messages
 	switch(nCommandId)
@@ -349,17 +363,17 @@ LONG HexEdit_OnCommand(HWND hwnd, UINT nCommandId, UINT nNotify, HWND hwndContro
 		
 	case IDM_GROUP_BYTE:
         g_bitForm = 1;
-		HexView_SetGrouping(hwndHV, g_bitForm);
+		HexEdit_SetGrouping(hwnd, g_bitForm);
 		return 0;
 		
 	case IDM_GROUP_WORD:
         g_bitForm = 2;
-		HexView_SetGrouping(hwndHV, g_bitForm);
+		HexEdit_SetGrouping(hwnd, g_bitForm);
 		return 0;
 		
 	case IDM_GROUP_DWORD:
         g_bitForm = 4;
-		HexView_SetGrouping(hwndHV, g_bitForm);
+		HexEdit_SetGrouping(hwnd, g_bitForm);
 		return 0;
 		
 		/*	case IDM_GROUP_QWORD:

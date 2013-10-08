@@ -272,7 +272,7 @@ size_w PasteTransform(HWND hwndDlg, HGLOBAL hGlobalMem, IMPEXP_OPTIONS *ieopt)
 	hThread = CreatePipeThread(szPipeName, PipeWriteProc, &param);
 
 	// import from the pipe! We need +1 to get into the 1....n range,
-	if((count = Import(szPipeName, g_hwndHexView, ieopt)) == 0)
+	if((count = Import(szPipeName, GetActiveHexView(g_hwndMain), ieopt)) == 0)
 	{
 		if(GetLastError() != ERROR_NO_MORE_ITEMS)
 		{
@@ -362,7 +362,7 @@ INT_PTR CALLBACK PasteDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 	static int  nLastTransform	= 0;
 	static BOOL fLastMask		= FALSE;
 
-	HWND hwndHV = g_hwndHexView;
+    HWND hwndHV = GetActiveHexView(g_hwndMain);
 
 	switch (iMsg)
 	{

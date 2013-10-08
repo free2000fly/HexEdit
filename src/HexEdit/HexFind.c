@@ -570,7 +570,7 @@ BOOL Update(HWND hwnd, SEARCH_PANE_STATE *sps, BYTE *searchData, int *searchLen)
 
 BOOL FindNext()
 {
-	HWND hwndHV = g_hwndHexView;
+	HWND hwndHV = GetActiveHexView(g_hwndMain);
 	size_w result;
 	UINT options = 0;
 
@@ -810,7 +810,7 @@ INT_PTR CALLBACK FindHexDlg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	int i;
 	HWND hwndPin;
 
-	HWND hwndHV = g_hwndHexView;
+    HWND hwndHV = GetActiveHexView(g_hwndMain);
 
 	switch(msg)
 	{
@@ -1118,7 +1118,7 @@ INT_PTR CALLBACK SearchDlg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	static POINT ptLastPos;
 	static BOOL  fFirstTime = TRUE;
 	HWND hwndCombo;
-	HWND hwndHV = g_hwndHexView;
+    HWND hwndHV = GetActiveHexView(g_hwndMain);
 
 	switch(msg)
 	{
@@ -1228,17 +1228,18 @@ BOOL ShowFindDialog(HWND hwndMain, int nCurrentFindTab)
 	BYTE initial[64];
 	size_w sellen = 0;
 	size_w offset;
+    HWND hwndHV = GetActiveHexView(hwndMain);
 
-	if(HexView_GetSelSize(g_hwndHexView, &sellen))
+	if(HexView_GetSelSize(hwndHV, &sellen))
 	{
 		sellen = min(64, sellen);
-		HexView_GetSelStart(g_hwndHexView, &offset);
-		HexView_GetData(g_hwndHexView, offset, initial, (ULONG)sellen);
+		HexView_GetSelStart(hwndHV, &offset);
+		HexView_GetData(hwndHV, offset, initial, (ULONG)sellen);
 	}
 
 	if(nCurrentFindTab == -1)
 	{
-		nCurrentFindTab = HexView_GetCurPane(g_hwndHexView);
+		nCurrentFindTab = HexView_GetCurPane(hwndHV);
 	}
 	else if(nCurrentFindTab == -2 && g_hwndSearch)
 	{

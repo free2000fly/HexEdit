@@ -728,7 +728,7 @@ BOOL ShowExportDlg(HWND hwnd, LPTSTR pszFileName, LPTSTR pszTitleName)
 
 	if(GetSaveFileName(&ofn)) 
 	{
-		return Export(szFileName, g_hwndHexView, &g_ExportOptions);
+		return Export(szFileName, GetActiveHexView(g_hwndMain), &g_ExportOptions);
 	}
 	else
 	{

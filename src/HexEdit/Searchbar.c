@@ -194,14 +194,15 @@ LRESULT CALLBACK oof(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case 6666:
 			if(HIWORD(wParam) == CBN_EDITCHANGE)
 			{
+                HWND hwndHV = GetActiveHexView(g_hwndMain);
 				TCHAR wstr[64];
 				BYTE buf[64];
 				int len;
 				GetWindowText((HWND)lParam, wstr, 64);
 				len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, (char *)buf, 64, 0, 0);
 				
-				HexView_SetSearchPattern(g_hwndHexView, buf, len - 1);
-				InvalidateRect(g_hwndHexView, 0, 0);
+				HexView_SetSearchPattern(hwndHV, buf, len - 1);
+				InvalidateRect(hwndHV, 0, 0);
 				return 0;
 			}
 			return 0;

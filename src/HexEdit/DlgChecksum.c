@@ -34,7 +34,7 @@ TCHAR * szAlgorithmList[] =
 
 INT_PTR CALLBACK ChecksumDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndHV = g_hwndHexView;
+    HWND hwndHV = GetActiveHexView(g_hwndMain);
 
 	switch (iMsg)
 	{

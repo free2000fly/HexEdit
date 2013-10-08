@@ -63,7 +63,7 @@ BOOL ReverseData(HWND hwndHV, unsigned sublen)
 
 INT_PTR CALLBACK ReverseDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndHV = g_hwndHexView;
+	HWND hwndHV = GetActiveHexView(g_hwndMain);
 	static BOOL   nWidth = sizeof(DWORD);
 	int num;
 	TCHAR buf[80];

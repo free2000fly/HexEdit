@@ -124,7 +124,7 @@ INT_PTR CALLBACK InsertDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 	static size_w len;
 	static BOOL   fHex;
 
-	HWND hwndHV = g_hwndHexView;
+    HWND hwndHV = GetActiveHexView(g_hwndMain);
 	HWND hwndCombo;
 
 	switch (iMsg)

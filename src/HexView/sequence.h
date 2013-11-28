@@ -165,7 +165,7 @@ private:
 	//	Span-table management
 	//
 	void			deletefromsequence(span **sptr);
-	span		*	spanfromindex(size_w index, size_w *spanindex) const;
+	span		*	spanfromindex(size_w index, size_w *spanindex = 0) const;
 	void			scan(span *sptr);
 	seqchar		*	getptr(span *sptr);
 

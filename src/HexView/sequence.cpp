@@ -522,7 +522,7 @@ bool sequence::import_buffer (const seqchar *buf, size_t len, size_w *buffer_off
 //	index		- character-position index
 //	*spanindex  - index of span within sequence
 //
-sequence::span* sequence::spanfromindex (size_w index, size_w *spanindex = 0) const
+sequence::span* sequence::spanfromindex (size_w index, size_w *spanindex) const
 {
 	span * sptr;
 	size_w curidx = 0;
